@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Gallery.css";
+import JSZip from "jszip"; // ⭐ Batch download support
 
 // ⭐ Detect file type by extension
 function getFileType(name) {
@@ -19,31 +20,24 @@ async function loadAlbums() {
   const repo = "chill-ebooth";
   const basePath = "Gallery";
 
-  // 1. List folders in /Gallery
   const folderRes = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${basePath}`
   );
   const folderJson = await folderRes.json();
 
-  console.log("ROOT FOLDERS:", folderJson);
-
-  // Only directories
   const folders = folderJson.filter((item) => item.type === "dir");
 
   const albums = [];
 
-  // 2. For each folder, list its files
   for (const folder of folders) {
     const filesRes = await fetch(folder.url);
     const filesJson = await filesRes.json();
-
-    console.log(`FILES IN ${folder.name}:`, filesJson);
 
     const files = filesJson
       .filter((f) => f.type === "file")
       .map((f) => ({
         name: f.name,
-        url: f.download_url, // Raw GitHub file URL
+        url: f.download_url,
         type: getFileType(f.name),
       }));
 
@@ -60,17 +54,52 @@ function Gallery() {
   const [albums, setAlbums] = useState([]);
   const [currentView, setCurrentView] = useState("albums");
   const [currentAlbum, setCurrentAlbum] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
+  // ⭐ Lightbox
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxContent, setLightboxContent] = useState(null);
 
+  // ⭐ Multi-select
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
   // ⭐ Load albums on mount
   useEffect(() => {
-    loadAlbums().then((data) => {
-      console.log("Loaded GitHub albums:", data);
-      setAlbums(data);
-    });
+    loadAlbums().then((data) => setAlbums(data));
   }, []);
+
+  // ⭐ Toggle file selection
+  function toggleSelect(file) {
+    setSelectedFiles((prev) =>
+      prev.includes(file) ? prev.filter((f) => f !== file) : [...prev, file]
+    );
+  }
+
+  // ⭐ Download single file
+  function downloadSingle(url, name) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+  }
+
+  // ⭐ Batch ZIP download
+  async function downloadZip() {
+    const zip = new JSZip();
+
+    for (const file of selectedFiles) {
+      const data = await fetch(file.url);
+      const blob = await data.blob();
+      zip.file(file.name, blob);
+    }
+
+    const output = await zip.generateAsync({ type: "blob" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(output);
+    a.download = `${currentAlbum.title}_batch.zip`;
+    a.click();
+  }
 
   return (
     <div className="gallery-app">
@@ -83,11 +112,9 @@ function Gallery() {
         <div className="glass-morph"></div>
       </div>
 
-
       {/* ---------------- ALBUM LIST ---------------- */}
       {currentView === "albums" && (
         <div className="explorer-container">
-
           <header className="explorer-header">
             <div className="header-left">
               <div className="folder-icon">
@@ -97,14 +124,18 @@ function Gallery() {
               <h1>Chill'eBooth Explorer</h1>
             </div>
 
+            {/* ⭐ SEARCH FUNCTIONAL NOW */}
             <div className="header-right">
               <div className="search-box glass-input">
                 <span>🔍</span>
-                <input placeholder="Search..." disabled />
+                <input
+                  placeholder="Search albums..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
           </header>
-
 
           <div className="explorer-content">
 
@@ -116,54 +147,64 @@ function Gallery() {
               </div>
             </div>
 
-
             {/* Album Grid */}
             <div className="main-content">
               <div className="content-header">
                 <div className="breadcrumb">
-                  <span>Chill'eBooth</span> / <span className="current">All Albums</span>
+                  <span>Chill'eBooth</span> /
+                  <span className="current"> All Albums</span>
                 </div>
-                <div className="view-stats">{albums.length} albums</div>
+                <div className="view-stats">
+                  {
+                    albums.filter((a) =>
+                      a.title.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).length
+                  }{" "}
+                  albums
+                </div>
               </div>
-
 
               <div className="files-grid">
-                {albums.map((album, index) => (
-                  <div
-                    key={index}
-                    className="file-item glass-card"
-                    onClick={() => {
-                      setCurrentAlbum(album);
-                      setCurrentView("album");
-                    }}
-                  >
-                    <div className="folder-preview">
-                      {album.files.length > 0 && album.files[0].type === "image" ? (
-                        <img src={album.files[0].url} alt="album cover" />
-                      ) : (
-                        <div className="placeholder-folder">📁</div>
-                      )}
-                    </div>
+                {albums
+                  .filter((album) =>
+                    album.title.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((album, index) => (
+                    <div
+                      key={index}
+                      className="file-item glass-card"
+                      onClick={() => {
+                        setCurrentAlbum(album);
+                        setCurrentView("album");
+                        setSelectedFiles([]);
+                        setMultiSelectMode(false);
+                      }}
+                    >
+                      <div className="folder-preview">
+                        {album.files[0]?.type === "image" ? (
+                          <img src={album.files[0].url} alt="cover" />
+                        ) : (
+                          <div className="album-initial">
+                            {album.title.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="file-info">
-                      <h3>{album.title}</h3>
-                      <p>{album.files.length} files</p>
+                      <div className="file-info">
+                        <h3>{album.title}</h3>
+                        <p>{album.files.length} files</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
-
             </div>
           </div>
         </div>
       )}
 
-
-
       {/* ---------------- ALBUM VIEW ---------------- */}
       {currentView === "album" && currentAlbum && (
         <div className="album-explorer">
-
           <header className="explorer-header">
             <div className="header-left">
               <button className="glass-button" onClick={() => setCurrentView("albums")}>
@@ -178,15 +219,49 @@ function Gallery() {
                 <span className="current">{currentAlbum.title}</span>
               </div>
             </div>
+
+            {/* ⭐ Multi select buttons */}
+            <div className="header-right">
+              {!multiSelectMode && (
+                <button className="glass-button" onClick={() => setMultiSelectMode(true)}>
+                  Select Multiple
+                </button>
+              )}
+
+              {multiSelectMode && (
+                <>
+                  <button className="glass-button" onClick={() => setMultiSelectMode(false)}>
+                    Cancel
+                  </button>
+
+                  {selectedFiles.length > 0 && (
+                    <button className="glass-button" onClick={downloadZip}>
+                      Download {selectedFiles.length}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </header>
 
-
           <div className="album-info-panel glass-card">
-            <div className="album-cover-large placeholder-image" />
+
+            {/* ⭐ ALBUM THUMBNAIL (cover or initial) */}
+            <div className="album-cover-large">
+              {currentAlbum.files[0]?.type === "image" ? (
+                <img src={currentAlbum.files[0].url} alt={currentAlbum.title} />
+              ) : (
+                <div className="album-initial-large">
+                  {currentAlbum.title.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
 
             <div className="album-details">
               <h1>{currentAlbum.title}</h1>
-              <p className="album-description">Loaded from GitHub repository</p>
+              <p className="album-description">
+                Kumpulan foto dari <b>{currentAlbum.title}</b>
+              </p>
 
               <div className="album-stats">
                 <div className="stat">
@@ -197,43 +272,56 @@ function Gallery() {
             </div>
           </div>
 
-
-
-          {/* Files Grid */}
+          {/* Files grid */}
           <div className="images-grid">
             {currentAlbum.files.map((file, i) => (
               <div
                 key={i}
-                className="image-item glass-card"
+                className={`image-item glass-card ${selectedFiles.includes(file) ? "selected" : ""}`}
                 onClick={() => {
+                  if (multiSelectMode) return toggleSelect(file);
                   if (file.type === "image" || file.type === "video") {
                     setLightboxContent(file);
                     setIsLightboxOpen(true);
                   }
                 }}
               >
+                {/* ⭐ Checkbox for selection */}
+                {multiSelectMode && (
+                  <div className="select-checkbox">
+                    {selectedFiles.includes(file) ? "✔" : ""}
+                  </div>
+                )}
 
                 {file.type === "image" && <img src={file.url} alt={file.name} />}
                 {file.type === "video" && <video src={file.url} muted />}
                 {file.type === "audio" && <div className="file-audio">🎵 {file.name}</div>}
                 {file.type === "pdf" && <div className="file-pdf">📄 {file.name}</div>}
                 {file.type === "file" && <div className="file-generic">📁 {file.name}</div>}
-
               </div>
             ))}
           </div>
-
         </div>
       )}
-
-
 
       {/* ---------------- LIGHTBOX ---------------- */}
       {isLightboxOpen && lightboxContent && (
         <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
           <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Close */}
+            <button className="close-btn" onClick={() => setIsLightboxOpen(false)}>
+              ✕
+            </button>
 
-            <button className="close-btn" onClick={() => setIsLightboxOpen(false)}>✕</button>
+            {/* ⭐ Single download */}
+            <button
+              className="glass-button"
+              style={{ position: "absolute", top: 20, right: 80 }}
+              onClick={() => downloadSingle(lightboxContent.url, lightboxContent.name)}
+            >
+              ⬇ Download
+            </button>
 
             <div className="image-viewer">
               {lightboxContent.type === "image" && (
@@ -244,12 +332,9 @@ function Gallery() {
                 <video src={lightboxContent.url} controls autoPlay />
               )}
             </div>
-
           </div>
         </div>
       )}
-
-
 
       {/* FOOTER */}
       <footer className="status-bar">
