@@ -802,600 +802,292 @@
 }
 
 /* Mobile Phone Styles - Max 480px */
-/* Ultra Optimized Mobile Styles - Max 480px */
 @media (max-width: 480px) {
-  /* Critical: Set viewport height properly for mobile browsers */
-  html, body {
-    height: 100%;
-    overflow-x: hidden;
-  }
-  
+  /* Base container adjustments */
   .gallery-app,
   .explorer-container,
   .album-explorer {
-    padding: 0;
-    min-height: -webkit-fill-available; /* iOS Safari fix */
-    min-height: 100vh;
+    padding: 10px;
+    min-height: calc(var(--vh, 1vh) * 100); /* Use viewport height for mobile */
     width: 100vw;
     overflow-x: hidden;
   }
 
-  /* Complete header overhaul */
+  /* Header adjustments */
   .explorer-header {
-    padding: 12px 16px !important;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 12px !important;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 15px 0;
+    margin-bottom: 15px;
   }
 
   .header-left {
     width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .folder-icon {
-    display: none; /* Remove decorative icon */
+    justify-content: space-between;
   }
 
   .header-left h1 {
-    font-size: 18px !important;
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 22px;
   }
 
-  /* Mobile-first header actions */
   .header-right {
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
   }
 
   .search-box {
-    grid-column: 1;
-    width: 100% !important;
-    padding: 8px 12px !important;
+    flex: 1;
+    min-width: 0; /* Allow shrinking */
   }
 
   .search-box input {
-    width: 100% !important;
-    font-size: 14px !important;
-    padding: 0 !important;
+    width: 100%;
+    min-width: 0;
   }
 
-  .sort-select,
-  .glass-button {
-    grid-column: 2;
-    padding: 8px 12px !important;
-    font-size: 13px !important;
-    white-space: nowrap;
+  .sort-select {
+    width: auto;
+    min-width: 120px;
   }
 
-  /* Remove all decorative backgrounds on mobile */
-  .liquid-background,
-  .glass-morph,
-  .liquid-blob {
-    display: none !important;
-  }
-
-  /* Use simpler backgrounds for performance */
-  .gallery-app {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  }
-
-  /* Completely flat sidebar for mobile */
+  /* Content layout */
   .explorer-content {
-    display: block !important;
-    padding: 0 16px;
+    flex-direction: column;
+    gap: 15px;
   }
 
   .sidebar {
-    width: 100% !important;
-    padding: 0 !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    border: none !important;
-    margin-bottom: 16px;
-    overflow-x: auto; /* Horizontal scroll for categories */
-    overflow-y: hidden;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .sidebar-section {
-    margin-bottom: 0 !important;
-  }
-
-  .sidebar-section h3 {
-    display: none; /* Hide section titles */
-  }
-
-  /* Mobile category chips */
-  .sidebar-item {
-    display: inline-block !important;
-    padding: 8px 16px !important;
-    margin: 0 4px 8px 0;
-    border-radius: 20px !important;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    min-width: fit-content;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  .sidebar-item.active {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.5);
-  }
-
-  /* Main content - full width, no side margins */
-  .main-content {
-    width: 100% !important;
-    padding: 0 !important;
-  }
-
-  .content-header {
-    margin-bottom: 12px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .breadcrumb {
-    font-size: 12px;
     width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    padding: 15px;
+    max-height: 60vh;
+    overflow-y: auto;
   }
 
-  .view-stats {
-    font-size: 11px;
-    opacity: 0.7;
+  /* Grid adjustments */
+  .files-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 
-  /* Single column grid for everything */
-  .files-grid,
-  .images-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-  }
-
-  /* Ultra compact file items */
   .file-item {
-    padding: 12px !important;
-    margin: 0 !important;
-    display: grid !important;
-    grid-template-columns: auto 1fr;
-    gap: 12px;
-    align-items: center;
+    padding: 15px;
+    margin: 0;
+    width: 100%;
   }
 
-  .folder-preview {
-    width: 60px !important;
-    height: 60px !important;
-    border-radius: 8px !important;
-    grid-row: span 2;
-  }
-
-  .file-info {
-    grid-column: 2;
-  }
-
-  .file-info h3 {
-    font-size: 14px !important;
-    margin-bottom: 4px !important;
-  }
-
-  .file-info p {
-    font-size: 11px !important;
-    opacity: 0.7;
-  }
-
-  /* Album view optimization */
+  /* Album explorer mobile */
   .album-info-panel {
-    padding: 16px !important;
-    margin: 0 0 16px 0 !important;
-    display: grid !important;
-    grid-template-columns: auto 1fr;
-    gap: 16px;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
+    padding: 15px;
+    gap: 15px;
   }
 
   .album-cover-large {
-    width: 80px !important;
-    height: 80px !important;
-    border-radius: 10px !important;
+    width: 100px;
+    height: 100px;
   }
 
   .album-details h1 {
-    font-size: 18px !important;
-    margin-bottom: 4px !important;
-  }
-
-  .album-description {
-    font-size: 12px !important;
-    margin-bottom: 8px !important;
-    line-height: 1.4;
+    font-size: 20px;
   }
 
   .album-stats {
-    gap: 16px !important;
+    justify-content: center;
+    gap: 20px;
   }
 
-  .stat-number {
-    font-size: 16px !important;
-  }
-
-  .stat-label {
-    font-size: 10px !important;
-  }
-
-  /* Image grid - 2 columns for portrait */
+  /* Images grid for mobile */
   .images-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(auto-fill, minmax(calc(50vw - 25px), 1fr));
+    gap: 12px;
   }
 
   .image-item {
-    aspect-ratio: 1/1 !important; /* Force square */
-    border-radius: 8px !important;
-    overflow: hidden;
+    width: 100%;
   }
 
-  .image-item img,
-  .image-item video {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
+  .image-container {
+    aspect-ratio: 1/1; /* Square aspect ratio for mobile thumbnails */
   }
 
-  /* Hide all non-essential content inside image items */
-  .file-audio,
-  .file-pdf,
-  .file-generic,
-  .image-info,
-  .select-checkbox {
-    display: none !important;
-  }
-
-  /* Only show checkboxes in multi-select mode */
-  .multi-select-mode .image-item::before {
-    content: "";
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    z-index: 2;
-    display: none;
-  }
-
-  .multi-select-mode .image-item.selected::before {
-    background: #3b82f6;
-    content: "✓";
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-  }
-
-  /* Lightbox - full screen mobile */
+  /* Lightbox for mobile */
   .lightbox-overlay {
-    padding: 0 !important;
-    background: #000 !important;
+    padding: 10px;
   }
 
   .lightbox-container {
-    border-radius: 0 !important;
-    border: none !important;
+    border-radius: 12px;
   }
 
   .close-btn {
-    top: env(safe-area-inset-top, 12px) !important;
-    right: env(safe-area-inset-right, 12px) !important;
-    width: 44px !important;
-    height: 44px !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-  }
-
-  /* Hide download button in lightbox - use native long press */
-  .lightbox-container .glass-button {
-    display: none !important;
-  }
-
-  /* Optimize image viewer */
-  .image-viewer {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
   }
 
   .image-viewer img,
   .image-viewer video {
-    max-width: 100vw !important;
-    max-height: 100vh !important;
-    object-fit: contain !important;
+    max-height: 70vh;
   }
 
-  /* Status bar - minimal */
+  /* File info adjustments */
+  .file-info h3 {
+    font-size: 14px;
+  }
+
+  .file-desc {
+    font-size: 12px;
+    -webkit-line-clamp: 3;
+  }
+
+  /* Button sizes */
+  .glass-button {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  /* Breadcrumb adjustments */
+  .breadcrumb {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Status bar */
   .status-bar {
-    padding: 8px 16px !important;
-    font-size: 10px !important;
-    position: sticky !important;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9) !important;
-    backdrop-filter: none !important;
+    padding: 8px 10px;
+    font-size: 10px;
   }
 
-  .status-left {
-    gap: 8px;
-  }
-
-  .status-right {
-    display: none; /* Hide non-essential info */
-  }
-
-  /* Empty states - simplified */
+  /* Empty states */
   .empty-state {
-    padding: 32px 20px !important;
+    padding: 40px 20px;
   }
 
   .empty-icon {
-    font-size: 32px !important;
-    margin-bottom: 12px !important;
+    font-size: 48px;
   }
 
   .empty-state h3 {
-    font-size: 16px !important;
+    font-size: 18px;
   }
 
-  .empty-state p {
-    font-size: 12px !important;
+  /* Folder icon size */
+  .folder-icon {
+    width: 32px;
+    height: 26px;
   }
 
-  /* Mobile-specific interaction improvements */
-  .file-item,
-  .image-item,
-  .sidebar-item,
-  .glass-button {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+  /* Liquid blobs smaller */
+  .liquid-blob {
+    filter: blur(20px);
   }
 
-  /* Prevent text selection on interactive elements */
-  .file-item,
-  .image-item,
+  .blob-1 {
+    width: 150px;
+    height: 150px;
+  }
+
+  .blob-2 {
+    width: 200px;
+    height: 200px;
+  }
+
+  .blob-3 {
+    width: 125px;
+    height: 125px;
+  }
+
+  /* Sidebar items */
   .sidebar-item {
-    user-select: none;
-    -webkit-user-select: none;
+    padding: 8px 10px;
+    font-size: 13px;
   }
 
-  /* Add visual feedback for touch */
-  .file-item:active,
-  .image-item:active,
-  .glass-button:active {
-    opacity: 0.7;
-    transform: scale(0.98) !important;
+  /* Album initial (cover letter) */
+  .album-initial {
+    font-size: 2rem;
   }
 
-  /* Remove all hover effects */
-  .file-item:hover,
-  .image-item:hover,
-  .glass-button:hover {
-    transform: none !important;
-    background: none !important;
-    box-shadow: none !important;
+  /* Image info panel */
+  .image-info {
+    padding: 8px;
   }
 
-  /* Loading states */
-  .loading-container {
-    padding: 20px !important;
+  .image-name {
+    font-size: 12px;
   }
 
-  .loading-spinner {
-    width: 40px;
-    height: 40px;
+  .image-type {
+    font-size: 10px;
   }
 
-  /* Ultra compact for very small phones */
-  @media (max-width: 360px) {
+  /* Touch-friendly hit areas */
+  .sidebar-item,
+  .file-item,
+  .image-item,
+  .glass-button {
+    min-height: 44px; /* Minimum touch target size */
+  }
+
+  /* Hide less important elements on mobile */
+  .file-desc {
+    display: none; /* Hide description on mobile to save space */
+  }
+
+  /* View stats */
+  .view-stats {
+    font-size: 12px;
+    margin-top: 10px;
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Portrait orientation optimization */
+  @media (orientation: portrait) {
     .images-grid {
-      grid-template-columns: 1fr !important;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .file-item {
+      padding: 12px;
+    }
+  }
+
+  /* Landscape orientation optimization */
+  @media (orientation: landscape) and (max-height: 480px) {
+    .explorer-container,
+    .album-explorer {
+      padding: 5px;
+    }
+    
+    .images-grid {
+      grid-template-columns: repeat(3, 1fr);
     }
     
     .album-info-panel {
-      grid-template-columns: 1fr;
-      text-align: center;
-    }
-    
-    .album-cover-large {
-      margin: 0 auto;
-    }
-  }
-
-  /* Landscape optimization */
-  @media (orientation: landscape) and (max-height: 480px) {
-    .explorer-header {
-      flex-direction: row !important;
-      padding: 8px 16px !important;
-    }
-    
-    .header-right {
-      grid-template-columns: auto auto;
-      width: auto;
-    }
-    
-    .sidebar {
-      display: none; /* Hide sidebar in landscape */
-    }
-    
-    .images-grid {
-      grid-template-columns: repeat(3, 1fr) !important;
-    }
-  }
-
-  /* Dark mode optimization */
-  @media (prefers-color-scheme: dark) {
-    .gallery-app {
-      background: #000;
-    }
-    
-    .file-item,
-    .image-item,
-    .sidebar-item {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border-color: rgba(255, 255, 255, 0.1) !important;
+      flex-direction: row;
+      text-align: left;
     }
   }
 }
 
-/* Supabase specific styles */
-.supabase-badge {
-  background: linear-gradient(135deg, #3ecf8e, #1ebea5);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-left: 8px;
-}
-
-.storage-info {
-  display: flex;
-  justify-content: space-between;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 11px;
-  margin-bottom: 12px;
-  padding: 0 4px;
-}
-
-.sidebar-count {
-  margin-left: auto;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 11px;
-  min-width: 24px;
-  text-align: center;
-}
-
-.file-type-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px;
-  border-radius: 6px;
-  font-size: 12px;
-  backdrop-filter: blur(10px);
-  z-index: 2;
-}
-
-.video-thumbnail {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.video-thumbnail video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.play-button {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.7);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  backdrop-filter: blur(10px);
-}
-
-.file-generic-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 20px;
-  text-align: center;
-}
-
-.file-icon-large {
-  font-size: 48px;
-  margin-bottom: 12px;
-  opacity: 0.8;
-}
-
-.file-name {
-  color: white;
-  font-size: 12px;
-  margin-bottom: 4px;
-  word-break: break-all;
-  text-align: center;
-}
-
-.file-size-small {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 10px;
-}
-
-.download-btn {
-  background: linear-gradient(135deg, #3ecf8e, #1ebea5) !important;
-  border-color: rgba(62, 207, 142, 0.3) !important;
-}
-
-/* Loading container */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  color: white;
-  text-align: center;
-  z-index: 10;
-  position: relative;
-}
-
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  color: white;
-  text-align: center;
-  padding: 20px;
-  z-index: 10;
-  position: relative;
-}
-
-.error-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-  opacity: 0.8;
+/* Additional optimization for very small screens */
+@media (max-width: 360px) {
+  .images-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-left h1 {
+    font-size: 20px;
+  }
+  
+  .album-details h1 {
+    font-size: 18px;
+  }
 }
