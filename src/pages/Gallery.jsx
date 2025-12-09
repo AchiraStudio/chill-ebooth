@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Gallery.css";
-import { supabase } from "./supabase";
 
-
-// ⭐ Detect file type from extension
+// ⭐ Detect file type by extension
 function getFileType(name) {
   const ext = name.split(".").pop().toLowerCase();
 
@@ -12,90 +10,67 @@ function getFileType(name) {
   if (["mp3", "wav", "ogg"].includes(ext)) return "audio";
   if (["pdf"].includes(ext)) return "pdf";
 
-  return "file"; // fallback
+  return "file";
 }
 
-
-// ⭐ Load albums from Supabase
+// ⭐ Load albums from GitHub repo
 async function loadAlbums() {
-  let { data: root } = await supabase.storage
-    .from("gallery")
-    .list("", {
-      limit: 100,
-      offset: 0,
-      sortBy: { column: "name", order: "asc" }
-    });
+  const owner = "AchiraStudio";
+  const repo = "chill-ebooth";
+  const basePath = "Gallery";
 
-  console.log("ROOT LIST:", root);
+  // 1. List folders in /Gallery
+  const folderRes = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${basePath}`
+  );
+  const folderJson = await folderRes.json();
 
-  // Fallback if root folder listing fails
-  if (!root || root.length === 0) {
-    const alt = await supabase.storage.from("gallery").list(null, {
-      limit: 100,
-      offset: 0
-    });
-    console.log("ALT ROOT LIST:", alt);
-    root = alt.data;
-  }
+  console.log("ROOT FOLDERS:", folderJson);
 
-  const folders = root.filter((item) => item.type === "folder");
-  console.log("DETECTED FOLDERS:", folders);
+  // Only directories
+  const folders = folderJson.filter((item) => item.type === "dir");
 
   const albums = [];
 
+  // 2. For each folder, list its files
   for (const folder of folders) {
-    const folderName = folder.name;
+    const filesRes = await fetch(folder.url);
+    const filesJson = await filesRes.json();
 
-    const { data: files } = await supabase.storage
-      .from("gallery")
-      .list(folderName, { limit: 200 });
+    console.log(`FILES IN ${folder.name}:`, filesJson);
 
-    console.log(`FILES IN ${folderName}:`, files);
-
-    const items = files
-      .filter((f) => f.name) // include ALL files
-      .map((f) => {
-        const path = `${folderName}/${f.name}`;
-        const { data: pub } = supabase.storage
-          .from("gallery")
-          .getPublicUrl(path);
-
-        return {
-          name: f.name,
-          url: pub.publicUrl,
-          type: getFileType(f.name)
-        };
-      });
+    const files = filesJson
+      .filter((f) => f.type === "file")
+      .map((f) => ({
+        name: f.name,
+        url: f.download_url, // Raw GitHub file URL
+        type: getFileType(f.name),
+      }));
 
     albums.push({
-      title: folderName,
-      files: items
+      title: folder.name,
+      files,
     });
   }
 
   return albums;
 }
 
-
-
-
 function Gallery() {
   const [albums, setAlbums] = useState([]);
   const [currentView, setCurrentView] = useState("albums");
   const [currentAlbum, setCurrentAlbum] = useState(null);
+
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxContent, setLightboxContent] = useState(null);
 
-  // ⭐ Load album list
+  // ⭐ Load albums on mount
   useEffect(() => {
     loadAlbums().then((data) => {
-      console.log("Loaded Supabase albums:", data);
+      console.log("Loaded GitHub albums:", data);
       setAlbums(data);
     });
   }, []);
-
-
-
 
   return (
     <div className="gallery-app">
@@ -109,9 +84,7 @@ function Gallery() {
       </div>
 
 
-
-
-      {/* ---------------- ALBUM LIST VIEW ---------------- */}
+      {/* ---------------- ALBUM LIST ---------------- */}
       {currentView === "albums" && (
         <div className="explorer-container">
 
@@ -121,7 +94,7 @@ function Gallery() {
                 <div className="folder-tab"></div>
                 <div className="folder-body"></div>
               </div>
-              <h1>Gallery</h1>
+              <h1>Chill'eBooth Explorer</h1>
             </div>
 
             <div className="header-right">
@@ -144,16 +117,13 @@ function Gallery() {
             </div>
 
 
-
-
-            {/* Main */}
+            {/* Album Grid */}
             <div className="main-content">
               <div className="content-header">
                 <div className="breadcrumb">
-                  <span>Gallery</span> / 
-                  <span className="current">All Albums</span>
+                  <span>Chill'eBooth</span> / <span className="current">All Albums</span>
                 </div>
-                <div className="view-stats">{albums.length} items</div>
+                <div className="view-stats">{albums.length} albums</div>
               </div>
 
 
@@ -168,12 +138,8 @@ function Gallery() {
                     }}
                   >
                     <div className="folder-preview">
-                      {album.files.length > 0 ? (
-                        album.files[0].type === "image" ? (
-                          <img src={album.files[0].url} alt="cover" />
-                        ) : (
-                          <div className="placeholder-folder">📁</div>
-                        )
+                      {album.files.length > 0 && album.files[0].type === "image" ? (
+                        <img src={album.files[0].url} alt="album cover" />
                       ) : (
                         <div className="placeholder-folder">📁</div>
                       )}
@@ -181,7 +147,7 @@ function Gallery() {
 
                     <div className="file-info">
                       <h3>{album.title}</h3>
-                      <p>{album.files.length} items</p>
+                      <p>{album.files.length} files</p>
                     </div>
                   </div>
                 ))}
@@ -191,7 +157,6 @@ function Gallery() {
           </div>
         </div>
       )}
-
 
 
 
@@ -218,9 +183,10 @@ function Gallery() {
 
           <div className="album-info-panel glass-card">
             <div className="album-cover-large placeholder-image" />
+
             <div className="album-details">
               <h1>{currentAlbum.title}</h1>
-              <p className="album-description">Album imported from Supabase</p>
+              <p className="album-description">Loaded from GitHub repository</p>
 
               <div className="album-stats">
                 <div className="stat">
@@ -233,8 +199,7 @@ function Gallery() {
 
 
 
-
-          {/* Files grid */}
+          {/* Files Grid */}
           <div className="images-grid">
             {currentAlbum.files.map((file, i) => (
               <div
@@ -248,30 +213,11 @@ function Gallery() {
                 }}
               >
 
-                {/* IMAGE */}
-                {file.type === "image" && (
-                  <img src={file.url} alt={file.name} />
-                )}
-
-                {/* VIDEO */}
-                {file.type === "video" && (
-                  <video src={file.url} muted />
-                )}
-
-                {/* AUDIO */}
-                {file.type === "audio" && (
-                  <div className="file-audio">🎵 {file.name}</div>
-                )}
-
-                {/* PDF */}
-                {file.type === "pdf" && (
-                  <div className="file-pdf">📄 {file.name}</div>
-                )}
-
-                {/* OTHER FILE */}
-                {file.type === "file" && (
-                  <div className="file-generic">📁 {file.name}</div>
-                )}
+                {file.type === "image" && <img src={file.url} alt={file.name} />}
+                {file.type === "video" && <video src={file.url} muted />}
+                {file.type === "audio" && <div className="file-audio">🎵 {file.name}</div>}
+                {file.type === "pdf" && <div className="file-pdf">📄 {file.name}</div>}
+                {file.type === "file" && <div className="file-generic">📁 {file.name}</div>}
 
               </div>
             ))}
@@ -282,34 +228,26 @@ function Gallery() {
 
 
 
-
       {/* ---------------- LIGHTBOX ---------------- */}
       {isLightboxOpen && lightboxContent && (
         <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
           <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
 
-            <button className="close-btn" onClick={() => setIsLightboxOpen(false)}>
-              ✕
-            </button>
+            <button className="close-btn" onClick={() => setIsLightboxOpen(false)}>✕</button>
 
             <div className="image-viewer">
-
-              {/* IMAGE PREVIEW */}
               {lightboxContent.type === "image" && (
                 <img src={lightboxContent.url} alt={lightboxContent.name} />
               )}
 
-              {/* VIDEO PREVIEW */}
               {lightboxContent.type === "video" && (
                 <video src={lightboxContent.url} controls autoPlay />
               )}
-
             </div>
 
           </div>
         </div>
       )}
-
 
 
 
