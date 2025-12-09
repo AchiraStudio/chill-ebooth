@@ -1,16 +1,17 @@
 {
-  "homepage": "https://achirastudio.github.io/chill-ebooth/",
   "name": "chill-ebooth",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://achirastudio.github.io/chill-ebooth/",
   "scripts": {
-          "start": "react-scripts start",
-          "build": "react-scripts build",
-          "test": "react-scripts test",
-          "eject": "react-scripts eject",
-          "predeploy": "npm run build",
-          "deploy": "main -d build"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "postbuild": "node copy404.js",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.87.1",

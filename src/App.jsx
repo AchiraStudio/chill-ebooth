@@ -3,7 +3,7 @@ import Gallery from "./pages/Gallery";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/chill-ebooth">
       <Routes>
         <Route path="/" element={<Gallery />} />
       </Routes>
