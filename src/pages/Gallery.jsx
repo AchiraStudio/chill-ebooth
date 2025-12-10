@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Gallery.css";
-import JSZip from "jszip"; // ⭐ Batch download support
+import JSZip from "jszip";
 
-// ⭐ Detect file type by extension
 function getFileType(name) {
   const ext = name.split(".").pop().toLowerCase();
 
@@ -14,7 +13,6 @@ function getFileType(name) {
   return "file";
 }
 
-// ⭐ Load albums from GitHub repo
 async function loadAlbums() {
   const owner = "AchiraStudio";
   const repo = "chill-ebooth";
@@ -55,21 +53,35 @@ function Gallery() {
   const [currentView, setCurrentView] = useState("albums");
   const [currentAlbum, setCurrentAlbum] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // ⭐ Lightbox
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxContent, setLightboxContent] = useState(null);
-
-  // ⭐ Multi-select
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [imageOrientations, setImageOrientations] = useState({});
 
-  // ⭐ Load albums
+  // Load albums
   useEffect(() => {
     loadAlbums().then((data) => setAlbums(data));
   }, []);
 
-  // ⭐ File selection toggle
+  // Detect image orientations when album loads
+  useEffect(() => {
+    if (currentAlbum) {
+      const orientations = {};
+      currentAlbum.files.forEach((file) => {
+        if (file.type === "image") {
+          const img = new Image();
+          img.onload = () => {
+            const isLandscape = img.naturalWidth > img.naturalHeight;
+            orientations[file.url] = isLandscape ? 'landscape' : 'portrait';
+            setImageOrientations(prev => ({ ...prev, ...orientations }));
+          };
+          img.src = file.url;
+        }
+      });
+    }
+  }, [currentAlbum]);
+
   function toggleSelect(file) {
     setSelectedFiles((prev) =>
       prev.includes(file)
@@ -78,7 +90,6 @@ function Gallery() {
     );
   }
 
-  // ⭐ Single-file download
   function downloadSingle(url, name) {
     const a = document.createElement("a");
     a.href = url;
@@ -86,7 +97,6 @@ function Gallery() {
     a.click();
   }
 
-  // ⭐ Batch ZIP download
   async function downloadZip() {
     const zip = new JSZip();
 
@@ -106,7 +116,6 @@ function Gallery() {
 
   return (
     <div className="gallery-app">
-
       {/* Background */}
       <div className="liquid-background">
         <div className="liquid-blob blob-1"></div>
@@ -118,7 +127,6 @@ function Gallery() {
       {/* ---------------- ALBUM LIST VIEW ---------------- */}
       {currentView === "albums" && (
         <div className="explorer-container">
-
           <header className="explorer-header">
             <div className="header-left">
               <div className="folder-icon">
@@ -128,7 +136,6 @@ function Gallery() {
               <h1>Chill'eBooth Explorer</h1>
             </div>
 
-            {/* SEARCH BAR */}
             <div className="header-right">
               <div className="search-box glass-input">
                 <span>🔍</span>
@@ -142,13 +149,9 @@ function Gallery() {
           </header>
 
           <div className="explorer-content">
-
-            {/* ⭐ SIDEBAR WITH ALBUM LIST */}
             <div className="sidebar glass-card">
               <div className="sidebar-section">
                 <h3>Quick Access</h3>
-
-                {/* ALL ALBUMS */}
                 <div
                   className={`sidebar-item ${
                     currentView === "albums" ? "active" : ""
@@ -163,7 +166,6 @@ function Gallery() {
                   📁 All Albums
                 </div>
 
-                {/* EVERY ALBUM */}
                 {albums.map((album, i) => (
                   <div
                     key={i}
@@ -183,7 +185,6 @@ function Gallery() {
               </div>
             </div>
 
-            {/* ALBUM GRID */}
             <div className="main-content">
               <div className="content-header">
                 <div className="breadcrumb">
@@ -216,7 +217,11 @@ function Gallery() {
                     >
                       <div className="folder-preview">
                         {album.files[0]?.type === "image" ? (
-                          <img src={album.files[0].url} alt="cover" />
+                          <img 
+                            src={album.files[0].url} 
+                            alt="cover" 
+                            className="album-cover"
+                          />
                         ) : (
                           <div className="album-initial">
                             {album.title.charAt(0).toUpperCase()}
@@ -233,14 +238,12 @@ function Gallery() {
               </div>
             </div>
           </div>
-
         </div>
       )}
 
       {/* ---------------- ALBUM VIEW ---------------- */}
       {currentView === "album" && currentAlbum && (
         <div className="album-explorer">
-
           <header className="explorer-header">
             <div className="header-left">
               <button
@@ -262,7 +265,6 @@ function Gallery() {
               </div>
             </div>
 
-            {/* MULTI-SELECT BUTTONS */}
             <div className="header-right">
               {!multiSelectMode && (
                 <button
@@ -298,7 +300,11 @@ function Gallery() {
           <div className="album-info-panel glass-card">
             <div className="album-cover-large">
               {currentAlbum.files[0]?.type === "image" ? (
-                <img src={currentAlbum.files[0].url} alt={currentAlbum.title} />
+                <img 
+                  src={currentAlbum.files[0].url} 
+                  alt={currentAlbum.title} 
+                  className="album-cover"
+                />
               ) : (
                 <div className="album-initial-large">
                   {currentAlbum.title.charAt(0).toUpperCase()}
@@ -328,7 +334,7 @@ function Gallery() {
                 key={i}
                 className={`image-item glass-card ${
                   selectedFiles.includes(file) ? "selected" : ""
-                }`}
+                } ${imageOrientations[file.url] || ''}`}
                 onClick={() => {
                   if (multiSelectMode) return toggleSelect(file);
 
@@ -345,11 +351,20 @@ function Gallery() {
                 )}
 
                 {file.type === "image" && (
-                  <img src={file.url} alt={file.name} />
+                  <div className="image-container">
+                    <img 
+                      src={file.url} 
+                      alt={file.name}
+                      className={imageOrientations[file.url] || ''}
+                      loading="lazy"
+                    />
+                  </div>
                 )}
 
                 {file.type === "video" && (
-                  <video src={file.url} muted />
+                  <div className="image-container">
+                    <video src={file.url} muted className="video-thumbnail" />
+                  </div>
                 )}
 
                 {file.type === "audio" && (
@@ -386,7 +401,6 @@ function Gallery() {
               ✕
             </button>
 
-            {/* Single Download */}
             <button
               className="glass-button"
               style={{ position: "absolute", top: 20, right: 80 }}
@@ -399,7 +413,11 @@ function Gallery() {
 
             <div className="image-viewer">
               {lightboxContent.type === "image" && (
-                <img src={lightboxContent.url} alt={lightboxContent.name} />
+                <img 
+                  src={lightboxContent.url} 
+                  alt={lightboxContent.name} 
+                  className={imageOrientations[lightboxContent.url] || ''}
+                />
               )}
 
               {lightboxContent.type === "video" && (

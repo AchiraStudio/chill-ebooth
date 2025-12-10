@@ -490,9 +490,10 @@
 /* Images Grid */
 .images-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(177px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 16px;
   width: 100%;
+  align-items: start; /* Align items at the top */
 }
 
 .image-item {
@@ -504,17 +505,28 @@
   position: relative;
 }
 
+.image-item.landscape {
+  grid-column: span 2; /* Landscape images take 2 columns */
+}
+
+.image-item.portrait {
+  grid-column: span 1; /* Portrait images take 1 column */
+}
+
 .image-item:hover {
   transform: translateY(-4px);
   background: rgba(255, 255, 255, 0.15);
 }
 
 .image-container {
-  width: 100%;
-  aspect-ratio: 707 / 2000; /* original ratio */
-  border-radius: 12px;
+  position: relative;
+  border-radius: 8px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05); /* fallback bg */
+  background: rgba(0, 0, 0, 0.1); /* Background for letterboxing */
+  height: 200px; /* Fixed height for all images */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-container img,
@@ -522,9 +534,17 @@
 .image-item video {
   width: 100%;
   height: 100%;
-  object-fit: cover;   /* clean, fills container */
+  object-fit: contain; /* Show entire image instead of cropping */
   object-position: center;
+  background: rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
+}
+
+/* Album cover images should be cropped for consistency */
+.album-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Keep cover for album thumbnails */
 }
 
 .image-item:hover .image-container img {
@@ -594,6 +614,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .close-btn {
@@ -620,16 +643,16 @@
 }
 
 .image-viewer {
-  max-width: 100%;
-  max-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .image-viewer img {
   max-width: 100%;
-  max-height: 80vh;
+  max-height: 100%;
   object-fit: contain;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -640,6 +663,29 @@
   max-height: 80vh;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Lightbox improvements for landscape/portrait */
+.image-viewer img.landscape {
+  max-width: 90vw;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+}
+
+.image-viewer img.portrait {
+  max-height: 80vh;
+  max-width: 60vw;
+  width: auto;
+  height: auto;
+}
+
+/* Video thumbnail styling */
+.video-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 /* Status Bar */
@@ -727,12 +773,17 @@
     padding: 20px;
   }
   
+  .image-item.landscape,
+  .image-item.portrait {
+    grid-column: span 1; /* Single column on mobile */
+  }
+  
   .images-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
   
   .image-container {
-    aspect-ratio: 707 / 2000; /* keeps ratio, scales naturally */
+    height: 160px; /* Smaller height on mobile */
   }
 }
 
@@ -967,29 +1018,19 @@
 }
 
 /* Images Grid - 2 columns */
-.images-grid {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+@media (max-width: 480px) {
+  .images-grid {
+    grid-template-columns: repeat(2, 1fr); /* Fixed 2 columns */
+  }
+  
+  .image-container {
+    height: 140px;
+  }
 }
 
 .image-item {
   width: 100%;
   border-radius: 10px;
-}
-
-.image-container {
-  aspect-ratio: 1/1; /* Square for mobile */
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.image-container img,
-.image-item img,
-.image-item video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .image-info {
